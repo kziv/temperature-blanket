@@ -15,7 +15,8 @@
     // Use the submitted address data to get the coordinates for looking up weather data.
     const zip = document.getElementById('field-zip').value;
     getLatLongByAddress(zip)
-      .then((coordBounds) => {
+      .then((res) => {
+        console.log(res);
         return getWeather(coordBounds);
       });
 
@@ -44,22 +45,13 @@
       // @todo replace this with base url config.
       return axios.get(`${baseUrl}/location`, {
         crossDomain: true,
-        withCredentials: true,
         params: {
           address: address
         }
       })
         .then((res) => {
-          // Parse the data for lat/long and make a bounds box.
-          if (res.data.results.length) {
-            const point = res.data.results[0].geometry.bounds;
-            //return `${point.southwest.lat},${point.southwest.lng},${point.northeast.lat},${point.northeast.lng}`;
-            return `${point.southwest.lat},${point.southwest.lng}`;
-          }
-          else {
-            console.log(res);
-            return null;
-          }
+          // @todo error handling
+          return res.data;
         })
         .catch (err => console.error(err));
     }
@@ -71,7 +63,7 @@
   }
 
   function getWeather(latlong) {
-    https://archive-api.open-meteo.com/v1/archive?latitude=35.0456&longitude=-85.3097&start_date=2019-11-14&end_date=2020-11-13&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York
+    // https://archive-api.open-meteo.com/v1/archive?latitude=35.0456&longitude=-85.3097&start_date=2019-11-14&end_date=2020-11-13&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York
     try {
       return axios.get(`https://dark-sky.p.rapidapi.com/${latlong}`, {
         headers: {
