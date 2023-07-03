@@ -1,16 +1,20 @@
 /**
+ * Main functionality.
  *
+ * @todo include axios here instead of in the HTML.
  */
 ;(function () {
   'use strict';
+
+  const baseUrl = 'http://localhost:3000';
 
   // Attach event handler to form submit.
   document.getElementById('form-specs').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    // Get the zip code for looking up weather data.
+    // Use the submitted address data to get the coordinates for looking up weather data.
     const zip = document.getElementById('field-zip').value;
-    getLatLongByZip(zip)
+    getLatLongByAddress(zip)
       .then((coordBounds) => {
         return getWeather(coordBounds);
       });
@@ -33,14 +37,16 @@
   });
 
   /**
-   *
+   * Gets the lat/long by location.
    */
-  function getLatLongByZip(zip) {
+  function getLatLongByAddress(address) {
     try {
-      return axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+      // @todo replace this with base url config.
+      return axios.get(`${baseUrl}/location`, {
+        crossDomain: true,
+        withCredentials: true,
         params: {
-          key: 'AIzaSyDxJ_VCxK1pBWmFBwZ3XxZy7sPw7eWVGsY',
-          address: zip
+          address: address
         }
       })
         .then((res) => {
