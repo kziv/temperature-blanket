@@ -15,7 +15,6 @@ class Controller {
     const yesterday = new Date(today.setDate(today.getDate() - 1));
     today = new Date(); // Reset this for further math.
     const last_year = new Date(today.setFullYear(today.getFullYear() - 1));
-    console.log(last_year);
 
     //https://archive-api.open-meteo.com/v1/archive?latitude=35.0456&longitude=-85.3097&start_date=2019-11-14&end_date=2020-11-13&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York
     const options = {
@@ -31,15 +30,14 @@ class Controller {
 
     // Add temperature options.
     // @todo get these from the query.
-    options.params.daily = 'temperature_2m_max,temperature_2m_min';
+    options.params.daily = req.query.stats ?? 'temperature_2m_mean';
     options.params.timezone = 'America/New_York';
 
     try {
       // Ping the radar.io API with the location data query.
       const response = await axios(options);
-
+      console.log(response); // DEBUG
       res.send(response.data);
-      console.log(response);
     }
     catch (err) {
       console.log(err); // DEBUG
