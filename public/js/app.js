@@ -15,26 +15,13 @@
     // Use the submitted address data to get the coordinates for looking up weather data.
     const zip = document.getElementById('field-zip').value;
     getLatLongByAddress(zip)
-      .then((res) => {
-        console.log(res);
-        return getWeather(coordBounds);
-      });
-
-    /*
-      .then((coordBounds) => {
-        return getStation(coordBounds);
-      })
-      .then((stationId) => {
-        console.log(stationId);
-        const startDate = document.getElementById('field-start').value;
-        const endDate = document.getElementById('field-end').value;
-        return getTemps(stationId, startDate, endDate);
-      })
-    getTemps(zip)
       .then((data) => {
-        return data;
+        return getWeather(data);
+      })
+      .then((data) => {
+        const markup = parseWeatherData(data);
+        document.getElementById('results').innerHTML = markup;
       });
-    */
   });
 
   /**
@@ -62,17 +49,19 @@
     return true;
   }
 
-  function getWeather(latlong) {
-    // https://archive-api.open-meteo.com/v1/archive?latitude=35.0456&longitude=-85.3097&start_date=2019-11-14&end_date=2020-11-13&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York
+  /**
+   * Gets weather data for a given location.
+   */
+  function getWeather(data) {
     try {
-      return axios.get(`https://dark-sky.p.rapidapi.com/${latlong}`, {
-        headers: {
-          'x-rapidapi-host': 'dark-sky.p.rapidapi.com',
-          'x-rapidapi-key': 'ef5bd20381msh560f1cf255757e6p1714e3jsn6b58f7566759'
+      return axios.get(`${baseUrl}/weather`, {
+        crossDomain: true,
+        params: {
+          latitude: data.latitude,
+          longitude: data.longitude
         }
       })
         .then((res) => {
-          console.log(res);
           return res.data;
         });
     }
@@ -84,42 +73,64 @@
   }
 
   /**
-   * Gets the temperature stats from the weather API.
+   * Parses the weather data into a format that can be output.
    */
-  //function getTemps(stationId, startDate, endDate) {
-  function getTemps(zip, startDate, endDate) {
-    try {
-      // @todo https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&locationid=ZIP:28801&startdate=2010-05-01&enddate=2010-05-01
-        //dataTypes=DP01,DP05,DP10,DSND,DSNW,DT00,DT32,DX32,DX70,DX90,SNOW,PRCP&stations=ASN00084027&startDate=1952-01-01&endDate=1970-12-31&includeAttributes=true&format=json
-      return axios.get('https://www.ncdc.noaa.gov/cdo-web/api/v2/data', {
-        params: {
-          datasetid: 'GSOM',
-          //stations: stationId,
-          locationid: `ZIP:${zip}`,
-          startdate: '2019-11-14',
-          enddate: '2020-11-13',
-          //includemetadata: false,
-          format: 'json'
-        },
-        headers: {
-          token:'PjHrAchUAPuQHfYyImvVWZgMuYVcylgH'
+  function parseWeatherData(data) {
+    let markup = '<table class="table table-striped table-bordered table-sm">';
+
+    // Create the columns first.
+    markup += '<thead><tr>';
+    const column_order = getColumnOrder();
+    for (const col of column_order) {
+      // If the column exists in the result data...
+      if (data.daily.hasOwnProperty(col)) {
+        markup += `<th>${getColumnNameForField(col)}</th>`;
+      }
+    }
+    markup += '</tr></thead>';
+
+    // Weather is returned as an array for each data point, including data.
+    markup += '<tbody>';
+    for (let i = 0; i < data.daily.time.length; i++) {
+      markup += '<tr>';
+      // We need to output the columsn in order.
+      for (const col of column_order) {
+        // Only output columns that exist.
+        if (data.daily.hasOwnProperty(col)) {
+          markup += `<td>${data.daily[col][i]}</td>`;
         }
-      })
-        .then((res) => {
-          console.log(res);
-          if (res.data.results.length) {
-            return res.data.results;
-          }
-          else {
-            console.log(res);
-            return null;
-          }
-        })
-        .catch (err => console.error(err))
+      }
+      markup += '</tr>';
     }
-    catch (err) {
-      console.log(err);
+    markup += '</tbody>';
+
+    // Close the table.
+    markup += '</table>';
+
+    return markup;
+  }
+
+  function getColumnNameForField(field) {
+    switch (field) {
+      case 'time':
+        return 'Date';
+      case 'temperature_2m_max':
+        return 'High Temp';
+      case 'temperature_2m_min':
+        return 'Low Temp';
+      case 'temperature_2m_mean':
+        return 'Avg Temp';
     }
+    return field;
+  }
+
+  function getColumnOrder() {
+    return [
+      'time',
+      'temperature_2m_min',
+      'temperature_2m_max',
+      'temperature_2m_mean'
+    ];
   }
 
 })();
