@@ -80,16 +80,30 @@
    */
   function getWeather(data) {
     try {
-      // Set the search parameters for the api.
+      // Set the required search parameters for the api.
       const params = {
         latitude: data.latitude,
         longitude: data.longitude,
       };
 
+      // Both start and end dates need to be populated
+      // to override the server-side defaults.
+      // @todo client side validation for these fields.
       if (data.start_date && data.end_date) {
         params.start_date = data.start_date.toISOString().split('T')[0];
         params.end_date = data.end_date.toISOString().split('T')[0];
       }
+
+      // Only get the requested stats.
+      const stats_checked = document.querySelectorAll('input[name="stats"]:checked');
+      const selected = Array.from(stats_checked).map(x => x.value);
+      if (!selected.length) {
+        // Mean is the default.
+        selected.push('mean');
+      }
+      params.stats = Array.from(selected).map(x => 'temperature_2m_' + x).join(',');
+
+      // Get the data from the API.
       return axios.get(`${baseUrl}/weather`, {
         crossDomain: true,
         params: params
