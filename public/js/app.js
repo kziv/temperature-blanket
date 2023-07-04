@@ -8,17 +8,37 @@
 
   const baseUrl = 'http://localhost:3000';
 
+  // These will be populated as the form is filled out
+  // so we don't have to calculate them again.
+  let start_date;
+  let end_date;
+
+  // Attach event handler to start date change.
+  document.getElementById('field-date-start').addEventListener('focusout', (e) => {
+    // If there's a start date but no end date...
+    const start_date_raw = document.getElementById('field-date-start').valueAsDate;
+    const end_date_field = document.getElementById('field-date-end');
+    if (start_date_raw && !end_date_field.value) {
+      const start_date_utc = new Date(start_date_raw.getUTCFullYear(), start_date_raw.getUTCMonth(), start_date_raw.getUTCDate());
+      start_date = start_date_utc;
+      // Calculate a year minus 1 day from the start date.
+      const end_date_raw = new Date(start_date_utc.setFullYear(start_date_utc.getFullYear() + 1));
+      end_date = new Date(end_date_raw.setDate(end_date_raw.getDate() - 1));
+      end_date_field.value = end_date.toISOString().split('T')[0];
+    }
+  });
+
   // Attach event handler to form submit.
-  document.getElementById('form-specs').addEventListener('submit', function (event) {
-    event.preventDefault();
+  document.getElementById('form-specs').addEventListener('submit', (e) => {
+    e.preventDefault();
 
     // Use the submitted address data to get the coordinates for looking up weather data.
     const zip = document.getElementById('field-zip').value;
     getLatLongByAddress(zip)
       .then((data) => {
         // Calculate optional params.
-        data.start_date = document.getElementById('field-date-start').valueAsDate;
-        data.end_date = document.getElementById('field-date-end').valueAsDate;
+        data.start_date = start_date;
+        data.end_date = end_date;
 
         return getWeather(data);
       })
