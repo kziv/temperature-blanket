@@ -19,8 +19,10 @@
     const start_date_raw = document.getElementById('field-date-start').valueAsDate;
     const end_date_field = document.getElementById('field-date-end');
     if (start_date_raw && !end_date_field.value) {
+      // Adjust for the UTC offset. Whatever the user entered they want that actual date.
       const start_date_utc = new Date(start_date_raw.getUTCFullYear(), start_date_raw.getUTCMonth(), start_date_raw.getUTCDate());
-      start_date = start_date_utc;
+      start_date = new Date(start_date_utc);
+
       // Calculate a year minus 1 day from the start date.
       const end_date_raw = new Date(start_date_utc.setFullYear(start_date_utc.getFullYear() + 1));
       end_date = new Date(end_date_raw.setDate(end_date_raw.getDate() - 1));
@@ -88,7 +90,6 @@
         params.start_date = data.start_date.toISOString().split('T')[0];
         params.end_date = data.end_date.toISOString().split('T')[0];
       }
-
       return axios.get(`${baseUrl}/weather`, {
         crossDomain: true,
         params: params
