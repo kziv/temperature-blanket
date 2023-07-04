@@ -16,6 +16,10 @@
     const zip = document.getElementById('field-zip').value;
     getLatLongByAddress(zip)
       .then((data) => {
+        // Calculate optional params.
+        data.start_date = document.getElementById('field-date-start').valueAsDate;
+        data.end_date = document.getElementById('field-date-end').valueAsDate;
+
         return getWeather(data);
       })
       .then((data) => {
@@ -54,12 +58,20 @@
    */
   function getWeather(data) {
     try {
+      // Set the search parameters for the api.
+      const params = {
+        latitude: data.latitude,
+        longitude: data.longitude,
+      };
+
+      if (data.start_date && data.end_date) {
+        params.start_date = data.start_date.toISOString().split('T')[0];
+        params.end_date = data.end_date.toISOString().split('T')[0];
+      }
+
       return axios.get(`${baseUrl}/weather`, {
         crossDomain: true,
-        params: {
-          latitude: data.latitude,
-          longitude: data.longitude
-        }
+        params: params
       })
         .then((res) => {
           return res.data;
