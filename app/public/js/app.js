@@ -2,7 +2,6 @@
  * Main functionality.
  *
  * @todo include axios here instead of in the HTML.
- * @todo make color calculations happen separately from API calls.
  * @todo toggle for colors per column vs colors for whole project.
  * @todo toggle for date order (default is oldest first)
  * @todo print stylesheet
@@ -11,6 +10,7 @@
   'use strict';
 
   const baseUrl = '/api';
+  const table_id = 'table-results';
 
   // These will be populated as the form is filled out
   // so we don't have to calculate them again.
@@ -43,7 +43,7 @@
     // Just use the existing data.
     if (weather_data) {
       const markup = parseWeatherData(weather_data);
-      return writeMarkup(weather_data);
+      return writeMarkup(markup);
     }
 
     // Use the submitted address data to get the coordinates for looking up weather data.
@@ -140,7 +140,7 @@
    */
   function parseWeatherData(data) {
     // Start the markup for the new table.
-    let markup = '<table id="table-results" class="table table-striped table-bordered table-sm mt-3">';
+    let markup = `<table id="${table_id}" class="table table-striped table-bordered table-sm mt-3">`;
 
     // Create the columns first.
     markup += '<thead><tr>';
@@ -198,15 +198,17 @@
     return markup;
   }
 
-  function writeMarkup() {
+  /**
+   * Writes the actual markup. Not sure why I broke this out.
+   */
+  function writeMarkup(markup) {
     // If there's already a table, remove it so we can recreate it
     // base on the data munging parameters.
-    const table = document.getElementById('table-results');
+    const table = document.getElementById(table_id);
     if (table) {
       table.remove();
     }
 
-    const markup = parseWeatherData(weather_data);
     document.getElementById('results').innerHTML = markup;
   }
 
@@ -241,6 +243,23 @@
     return color === 0
       ? 1
       : color;
+  }
+
+  function toggleTableRows() {
+    // Get all the table rows.
+    const rows = document.querySelectorAll(`#${table_id} tbody tr`);
+
+    // Reverse the rows
+    rows.reverse();
+
+    // Clear out the existing rows and rewrite them, now reversed.
+    /*
+    rows.remove();
+
+    for (var i = 0; i < myClass.length; ++i) {
+      wrapper.appendChild(myClass[i]);
+    }
+    */
   }
 
 })();
