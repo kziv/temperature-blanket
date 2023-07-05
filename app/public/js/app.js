@@ -140,7 +140,7 @@
    */
   function parseWeatherData(data) {
     // Start the markup for the new table.
-    let markup = `<table id="${table_id}" class="table table-striped table-bordered table-sm mt-3">`;
+    let markup = `<table id="${table_id}" class="table table-striped table-bordered table-sm mt-3 sortable">`;
 
     // Create the columns first.
     markup += '<thead><tr>';
@@ -149,7 +149,7 @@
       // If the column exists in the result data...
       if (data.daily.hasOwnProperty(col)) {
         markup += col === 'time'
-          ? `<th>${getColumnNameForField(col)}</th>`
+          ? `<th id="col-head-time">${getColumnNameForField(col)}</th>`
           : `<th colspan="2" class="text-center">${getColumnNameForField(col)}</th>`;
       }
     }
@@ -210,6 +210,11 @@
     }
 
     document.getElementById('results').innerHTML = markup;
+
+    // Attach event handler for the date column to allow sorting.
+    document.getElementById('col-head-time').addEventListener('click', (e) => {
+      toggleTableRows();
+    });
   }
 
   function getColumnNameForField(field) {
@@ -247,19 +252,20 @@
 
   function toggleTableRows() {
     // Get all the table rows.
-    const rows = document.querySelectorAll(`#${table_id} tbody tr`);
+    const tbody = document.querySelectorAll(`#${table_id} tbody`)[0];
+    const rows = tbody.getElementsByTagName('tr');
 
-    // Reverse the rows
-    rows.reverse();
+    // The rows are an HTMLCollection so we need to convert them to
+    // an array before reversing the order.
+    const reversed_rows = [].slice.call(rows, 0).reverse();
 
     // Clear out the existing rows and rewrite them, now reversed.
-    /*
-    rows.remove();
-
-    for (var i = 0; i < myClass.length; ++i) {
-      wrapper.appendChild(myClass[i]);
+    while (rows.length > 0) {
+      rows[0].remove();
     }
-    */
+    for (const row of reversed_rows) {
+      tbody.appendChild(row);
+    }
   }
 
 })();
