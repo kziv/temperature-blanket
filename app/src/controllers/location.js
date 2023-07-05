@@ -17,7 +17,7 @@ class Controller {
       },
       headers: {
         // Call is publishable so use the appropriate key.
-        Authorization: 'prj_live_pk_7d12b7cf2b16e8d57f846ed75dc1f04a9108a1c1'
+        Authorization: process.env.RADAR_API_KEY
       }
     };
 
