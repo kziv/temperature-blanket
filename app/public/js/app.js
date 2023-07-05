@@ -149,7 +149,7 @@
       // If the column exists in the result data...
       if (data.daily.hasOwnProperty(col)) {
         markup += col === 'time'
-          ? `<th id="col-head-time">${getColumnNameForField(col)}</th>`
+          ? `<th id="col-head-time" role="button">${getColumnNameForField(col)}</th>`
           : `<th colspan="2" class="text-center">${getColumnNameForField(col)}</th>`;
       }
     }
