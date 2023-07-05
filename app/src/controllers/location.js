@@ -7,7 +7,7 @@ class Controller {
   getLocation = async (req, res) => {
     // Check for the required parameter.
     if (!req.query.address) {
-      res.status(400).send('`address` is required');
+      return res.status(400).send('`address` is required');
     }
 
     const options = {
@@ -27,14 +27,16 @@ class Controller {
 
       // We assume the first result is the most relevant.
       if (response.data.hasOwnProperty('addresses') && Array.isArray(response.data.addresses) && response.data.addresses.length) {
-        res.send(response.data.addresses[0]);
+        return res.send(response.data.addresses[0]);
       }
     }
     catch (err) {
-      console.log(err); // DEBUG
       // Just show there was an error.
-      res.status(err.response.status).send(err.response.statusText);
+      return res.status(err.response.status).send(err.response.statusText);
     }
+
+    // No results but ok query response.
+    return res.status(200);
   }
 
 }
