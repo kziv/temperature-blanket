@@ -131,19 +131,43 @@
     for (const col of column_order) {
       // If the column exists in the result data...
       if (data.daily.hasOwnProperty(col)) {
-        markup += `<th>${getColumnNameForField(col)}</th>`;
+        markup += col === 'time'
+          ? `<th>${getColumnNameForField(col)}</th>`
+          : `<th colspan="2">${getColumnNameForField(col)}</th>`;
       }
     }
     markup += '</tr></thead>';
+
+    // Calculate the color values for each column.
+    const total_colors = document.getElementById('field-colors-count').value;
+    let color_chart = {};
+    for (const col of column_order) {
+      if (data.daily.hasOwnProperty(col) && col !== 'time') {
+        const min = Math.min(... data.daily[col]); // Lowest temp.
+        const max = Math.max(... data.daily[col]); // Highest temp.
+        color_chart[col] = {
+          min: min,
+          max: max,
+          size: (max - min) / total_colors // Size of single color range.
+        };
+      }
+    }
 
     // Weather is returned as an array for each data point, including data.
     markup += '<tbody>';
     for (let i = 0; i < data.daily.time.length; i++) {
       markup += '<tr>';
-      // We need to output the columsn in order.
+      // We need to output the columns in order.
       for (const col of column_order) {
         // Only output columns that exist.
         if (data.daily.hasOwnProperty(col)) {
+          // Color.
+          if (col !== 'time') {
+            const color = calculateColor(data.daily[col][i], color_chart[col].min, color_chart[col].size);
+            markup += `<td>${color}</td>`;
+          }
+
+          // Value.
           markup += `<td>${data.daily[col][i]}</td>`;
         }
       }
@@ -178,6 +202,16 @@
       'temperature_2m_max',
       'temperature_2m_mean'
     ];
+  }
+
+  /**
+   * Gets the color number.
+   */
+  function calculateColor(val, min_val, color_size) {
+    const color = Math.ceil((val - min_val) / color_size);
+    return color === 0
+      ? 1
+      : color;
   }
 
 })();
