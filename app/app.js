@@ -1,5 +1,6 @@
 const express = require('express');
 const exphbs = require('express-handlebars'); // View templates
+const path = require('path');
 const cors = require('cors');
 
 // ----- App config -----
@@ -24,6 +25,10 @@ app.use((req, res, next) => {
 app.engine('handlebars', exphbs.engine());
 app.set('view engine', 'handlebars');
 app.set('views', './src/views');
+
+// ----- Middleware -----
+app.use(express.static(path.join(__dirname, 'public'))); // Static files.
+// ----------------------
 
 if (!module.parent) {
   const server = app.listen(port);
