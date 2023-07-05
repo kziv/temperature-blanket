@@ -1,7 +1,13 @@
 const express = require('express');
-const app = express();
+const exphbs = require('express-handlebars'); // View templates
 const cors = require('cors');
+
+// ----- App config -----
 const port = 3000;
+// ----------------------
+
+// Initialize express framework.
+const app = express();
 
 // Load routes.
 require('./src/routes')(app);
@@ -13,6 +19,11 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', '*');
   next();
 });
+
+// View engine
+app.engine('handlebars', exphbs.engine());
+app.set('view engine', 'handlebars');
+app.set('views', './src/views');
 
 if (!module.parent) {
   const server = app.listen(port);
