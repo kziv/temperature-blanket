@@ -10,7 +10,7 @@
 ;(function () {
   'use strict';
 
-  const baseUrl = 'http://localhost:3000';
+  const baseUrl = '/api';
 
   // These will be populated as the form is filled out
   // so we don't have to calculate them again.
