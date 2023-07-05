@@ -21,7 +21,7 @@ class Controller {
       params: {
         latitude: req.query.latitude,
         longitude: req.query.longitude,
-        temperature_unit: 'fahrenheit', // Can override later.
+        temperature_unit: 'fahrenheit', // @todo make this an option
         start_date: req.query.start_date ?? last_year.toISOString().split('T')[0], // YYYY-MM-DD
         end_date: req.query.end_date ?? yesterday.toISOString().split('T')[0], // YYYY-MM-DD
         timezone: 'America/New_York', // @todo make this dynamic
