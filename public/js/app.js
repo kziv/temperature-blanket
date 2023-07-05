@@ -2,6 +2,10 @@
  * Main functionality.
  *
  * @todo include axios here instead of in the HTML.
+ * @todo make color calculations happen separately from API calls.
+ * @todo toggle for colors per column vs colors for whole project.
+ * @todo toggle for date order (default is oldest first)
+ * @todo print stylesheet
  */
 ;(function () {
   'use strict';
@@ -123,7 +127,7 @@
    * Parses the weather data into a format that can be output.
    */
   function parseWeatherData(data) {
-    let markup = '<table class="table table-striped table-bordered table-sm">';
+    let markup = '<table class="table table-striped table-bordered table-sm mt-3">';
 
     // Create the columns first.
     markup += '<thead><tr>';
@@ -133,7 +137,7 @@
       if (data.daily.hasOwnProperty(col)) {
         markup += col === 'time'
           ? `<th>${getColumnNameForField(col)}</th>`
-          : `<th colspan="2">${getColumnNameForField(col)}</th>`;
+          : `<th colspan="2" class="text-center">${getColumnNameForField(col)}</th>`;
       }
     }
     markup += '</tr></thead>';
