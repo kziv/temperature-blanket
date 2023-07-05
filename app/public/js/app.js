@@ -16,6 +16,7 @@
   // so we don't have to calculate them again.
   let start_date;
   let end_date;
+  let weather_data;
 
   // Attach event handler to start date change.
   document.getElementById('field-date-start').addEventListener('focusout', (e) => {
@@ -38,9 +39,16 @@
   document.getElementById('form-specs').addEventListener('submit', (e) => {
     e.preventDefault();
 
+    // If we already have weather data, no need to ping the APIs again.
+    // Just use the existing data.
+    if (weather_data) {
+      const markup = parseWeatherData(weather_data);
+      return writeMarkup(weather_data);
+    }
+
     // Use the submitted address data to get the coordinates for looking up weather data.
     const zip = document.getElementById('field-zip').value;
-    getLatLongByAddress(zip)
+    return getLatLongByAddress(zip)
       .then((data) => {
         // Calculate optional params.
         data.start_date = start_date;
@@ -49,8 +57,13 @@
         return getWeather(data);
       })
       .then((data) => {
-        const markup = parseWeatherData(data);
-        document.getElementById('results').innerHTML = markup;
+        // Set this globally so we don't have to ping the API
+        // for just sorting and other data munging operations.
+        weather_data = data;
+        return parseWeatherData(data);
+      })
+      .then((markup) => {
+        return writeMarkup(markup);
       });
   });
 
@@ -59,7 +72,6 @@
    */
   function getLatLongByAddress(address) {
     try {
-      // @todo replace this with base url config.
       return axios.get(`${baseUrl}/location`, {
         crossDomain: true,
         params: {
@@ -127,7 +139,8 @@
    * Parses the weather data into a format that can be output.
    */
   function parseWeatherData(data) {
-    let markup = '<table class="table table-striped table-bordered table-sm mt-3">';
+    // Start the markup for the new table.
+    let markup = '<table id="table-results" class="table table-striped table-bordered table-sm mt-3">';
 
     // Create the columns first.
     markup += '<thead><tr>';
@@ -183,6 +196,18 @@
     markup += '</table>';
 
     return markup;
+  }
+
+  function writeMarkup() {
+    // If there's already a table, remove it so we can recreate it
+    // base on the data munging parameters.
+    const table = document.getElementById('table-results');
+    if (table) {
+      table.remove();
+    }
+
+    const markup = parseWeatherData(weather_data);
+    document.getElementById('results').innerHTML = markup;
   }
 
   function getColumnNameForField(field) {
