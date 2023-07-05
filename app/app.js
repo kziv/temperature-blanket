@@ -1,11 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const exphbs = require('express-handlebars'); // View templates
 const path = require('path');
 const cors = require('cors');
-
-// ----- App config -----
-const port = 3000;
-// ----------------------
 
 // Initialize express framework.
 const app = express();
@@ -31,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // Static files.
 // ----------------------
 
 if (!module.parent) {
-  const server = app.listen(port);
+  const server = app.listen(process.env.PORT);
   // Set server timeout for 10 minutes.
   server.timeout = 60 * 10 * 1000;
 }
