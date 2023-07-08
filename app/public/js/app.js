@@ -18,26 +18,50 @@
   let end_date;
   let weather_data;
 
-  // Attach event handler to start date change.
-  document.getElementById('field-date-start').addEventListener('focusout', (e) => {
-    // If there's a start date but no end date...
-    const start_date_raw = document.getElementById('field-date-start').valueAsDate;
-    const end_date_field = document.getElementById('field-date-end');
-    if (start_date_raw && !end_date_field.value) {
-      // Adjust for the UTC offset. Whatever the user entered they want that actual date.
-      const start_date_utc = new Date(start_date_raw.getUTCFullYear(), start_date_raw.getUTCMonth(), start_date_raw.getUTCDate());
-      start_date = new Date(start_date_utc);
+  // Form fields for easy reference.
+  let field_start_date = document.getElementById('field-date-start');
+  let field_end_date = document.getElementById('field-date-end');
 
-      // Calculate a year minus 1 day from the start date.
-      const end_date_raw = new Date(start_date_utc.setFullYear(start_date_utc.getFullYear() + 1));
+  // Attach event handler to start date change.
+  field_start_date.addEventListener('focusout', (e) => {
+    // Clear out any existing weather data;
+    weather_data = null;
+
+    // Always set the start date for later calculation.
+    start_date = calculateLocalDate(field_start_date);
+
+    // If there's a start date but no end date,
+    // et the end date field value a year minus one day from the start date.
+    if (field_start_date.value && !field_end_date.value) {
+      let end_date_raw = new Date(start_date); // Clone the start date as to not modify it.
+      end_date_raw = new Date(end_date_raw.setFullYear(end_date_raw.getFullYear() + 1));
       end_date = new Date(end_date_raw.setDate(end_date_raw.getDate() - 1));
-      end_date_field.value = end_date.toISOString().split('T')[0];
+      field_end_date.value = end_date.toISOString().split('T')[0];
     }
+
+    // Validate the date range. This goes last in case we're changing the value after
+    // initially populating it so you don't get date comparison issues when the end
+    // date field is still empty.
+    validateDateRange(e.target);
+  });
+
+  // Attach event handler to end date change.
+  field_end_date.addEventListener('focusout', (e) => {
+    // Clear out any existing weather data;
+    weather_data = null;
+
+    end_date = calculateLocalDate(e.target);
+
+    // Validate the date range.
+    validateDateRange(e.target);
   });
 
   // Attach event handler to form submit.
   document.getElementById('form-specs').addEventListener('submit', (e) => {
     e.preventDefault();
+
+    // Make sure the form has valid data.
+    e.target.reportValidity();
 
     // If we already have weather data, no need to ping the APIs again.
     // Just use the existing data.
@@ -266,6 +290,45 @@
     for (const row of reversed_rows) {
       tbody.appendChild(row);
     }
+  }
+
+  function updateDateRanges() {
+    // If there's a start date but no end date...
+    const start_date_raw = document.getElementById('field-date-start').valueAsDate;
+    const end_date_field = document.getElementById('field-date-end');
+    if (start_date_raw && !end_date_field.value) {
+      // Adjust for the UTC offset. Whatever the user entered they want that actual date.
+      const start_date_utc = new Date(start_date_raw.getUTCFullYear(), start_date_raw.getUTCMonth(), start_date_raw.getUTCDate());
+      start_date = new Date(start_date_utc);
+
+      // Calculate a year minus 1 day from the start date.
+      const end_date_raw = new Date(start_date_utc.setFullYear(start_date_utc.getFullYear() + 1));
+      end_date = new Date(end_date_raw.setDate(end_date_raw.getDate() - 1));
+      end_date_field.value = end_date.toISOString().split('T')[0];
+    }
+  }
+
+  function calculateLocalDate(el) {
+    const raw = el.valueAsDate;
+    const utc = new Date(raw.getUTCFullYear(), raw.getUTCMonth(), raw.getUTCDate());
+    return utc;
+  }
+
+  function validateDateRange(el) {
+    // Start date must be before end date.
+    if (start_date > end_date) {
+      const msg = 'The end date must be later than the start date.';
+      el.setCustomValidity(msg);
+
+      // We don't need to do any more validation.
+      return false;
+    }
+    else {
+      el.setCustomValidity('');
+    }
+
+    // End date must be at least a week ago.
+    return true;
   }
 
 })();
