@@ -54,6 +54,9 @@
 
     // Validate the date range.
     validateDateRange(e.target);
+
+    // Validate the end date.
+    validateEndDate();
   });
 
   // Attach event handler to form submit.
@@ -295,8 +298,7 @@
   function updateDateRanges() {
     // If there's a start date but no end date...
     const start_date_raw = document.getElementById('field-date-start').valueAsDate;
-    const end_date_field = document.getElementById('field-date-end');
-    if (start_date_raw && !end_date_field.value) {
+    if (start_date_raw && !field_end_date.value) {
       // Adjust for the UTC offset. Whatever the user entered they want that actual date.
       const start_date_utc = new Date(start_date_raw.getUTCFullYear(), start_date_raw.getUTCMonth(), start_date_raw.getUTCDate());
       start_date = new Date(start_date_utc);
@@ -304,7 +306,7 @@
       // Calculate a year minus 1 day from the start date.
       const end_date_raw = new Date(start_date_utc.setFullYear(start_date_utc.getFullYear() + 1));
       end_date = new Date(end_date_raw.setDate(end_date_raw.getDate() - 1));
-      end_date_field.value = end_date.toISOString().split('T')[0];
+      field_end_date.value = end_date.toISOString().split('T')[0];
     }
   }
 
@@ -317,8 +319,7 @@
   function validateDateRange(el) {
     // Start date must be before end date.
     if (start_date > end_date) {
-      const msg = 'The end date must be later than the start date.';
-      el.setCustomValidity(msg);
+      el.setCustomValidity('The end date must be later than the start date.');
 
       // We don't need to do any more validation.
       return false;
@@ -327,7 +328,24 @@
       el.setCustomValidity('');
     }
 
-    // End date must be at least a week ago.
+    return true;
+  }
+
+  function validateEndDate() {
+    // End date must be at least a calendar week ago.
+    // i.e. one day before this day of the week last week.
+    // e.g. if today is Saturday, must be older than last Friday.
+    const today = new Date();
+    const week_ago = new Date(today.setDate(today.getDate() - 8));
+    if (field_end_date.valueAsDate > week_ago) {
+      field_end_date.setCustomValidity('The end date must be at least a week ago');
+
+      // We don't need to do any more validation.
+      return false;
+    }
+    else {
+      field_end_date.setCustomValidity('');
+    }
     return true;
   }
 
