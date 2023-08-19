@@ -26,7 +26,8 @@ app.use(express.static(path.join(__dirname, 'public'))); // Static files.
 
 // Spool up the app.
 if (!module.parent) {
-  const server = app.listen(process.env.PORT);
+  const port = process.env.PORT || 3000;
+  const server = app.listen(port, () => console.log(`Server is running on port ${port}`));
   // Set server timeout for 10 minutes.
   server.timeout = 60 * 10 * 1000;
 }
