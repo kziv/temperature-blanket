@@ -5,3 +5,18 @@
 main > .container {
   padding: 60px 15px 0;
 }
+
+/* Print styles */
+@media print {
+  nav, aside, header, footer, #form-specs {
+    display: none;
+  }
+
+  body {
+    font-size: 10pt;
+  }
+
+  main > .container {
+    padding: 0;
+  }
+}
